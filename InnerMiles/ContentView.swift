@@ -12,18 +12,30 @@ struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
 
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
+        sortDescriptors: [NSSortDescriptor(keyPath: \RunEntry.date, ascending: true)],
         animation: .default)
-    private var items: FetchedResults<Item>
+    private var items: FetchedResults<RunEntry>
+    
+    @State private var reflectionText = ""
+    @State private var showAddView = false
 
     var body: some View {
         NavigationView {
             List {
                 ForEach(items) { item in
                     NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text(item.reflection ?? "No Reflection")
+                                .font(.title2)
+
+                            if let date = item.date {
+                                Text(date, formatter: itemFormatter)
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                        }
                     } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
+                        Text(item.reflection ?? "No Reflection")
                     }
                 }
                 .onDelete(perform: deleteItems)
@@ -32,20 +44,27 @@ struct ContentView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
                 }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showAddView = true
+                    } label: {
+                        Label("Add Entry", systemImage: "plus")
                     }
                 }
             }
-            Text("Select an item")
+        }
+        .sheet(isPresented: $showAddView) {
+            AddEntryView()
         }
     }
 
     private func addItem() {
         withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+            let newItem = RunEntry(context: viewContext)
+            newItem.date = Date()
+            newItem.reflection = reflectionText
+            reflectionText = ""
 
             do {
                 try viewContext.save()
