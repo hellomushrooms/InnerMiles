@@ -14,10 +14,21 @@ struct PersistenceController {
     static let preview: PersistenceController = {
         let result = PersistenceController(inMemory: true)
         let viewContext = result.container.viewContext
-        for _ in 0..<10 {
-            let newItem = RunEntry(context: viewContext)
-            newItem.date = Date()
-        }
+        
+        let entry1 = RunEntry(context: viewContext)
+        entry1.date = Date()
+        entry1.reflection = "Easy recovery run, felt light and calm"
+        entry1.mood = "🙂"
+        entry1.runType = "Recovery Run"
+        entry1.difficulty = 2
+
+        let entry2 = RunEntry(context: viewContext)
+        entry2.date = Date().addingTimeInterval(-11112244)
+        entry2.reflection = "Speed workout, pushed hard but felt strong"
+        entry2.mood = "😄"
+        entry2.runType = "Speed Run"
+        entry2.difficulty = 4
+        
         do {
             try viewContext.save()
         } catch {

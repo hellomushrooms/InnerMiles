@@ -18,40 +18,105 @@ struct ContentView: View {
     
     @State private var reflectionText = ""
     @State private var showAddView = false
+    
+    var groupedEntries: [String: [RunEntry]] {
+        Dictionary(grouping: items) { item in
+            let formatter = DateFormatter()
+            formatter.dateFormat = "MMMM yyyy"
+            return formatter.string(from: item.date ?? Date())
+        }
+    }
+    
+    var sortedMonths: [String] {
+        groupedEntries.keys.sorted { a, b in
+            let formatter = DateFormatter()
+            formatter.dateFormat = "MMMM yyyy"
+            let dateA = formatter.date(from: a) ?? Date()
+            let dateB = formatter.date(from: b) ?? Date()
+            return dateA > dateB
+        }
+    }
 
     var body: some View {
         NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text(item.reflection ?? "No Reflection")
-                                .font(.title2)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
 
-                            if let date = item.date {
-                                Text(date, formatter: itemFormatter)
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
+                    VStack(alignment: .leading, spacing: 12) {
+                        Spacer()
+                        Text("Welcome back, \nDIKU!")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                        
+                        Spacer()
+                        Spacer()
+
+                        HStack{
+                            Spacer()
+                            Button {
+                                showAddView = true
+                            } label: {
+                                Text("Log a run")
+                                    .foregroundColor(.white)
+                                    .fontWeight(.bold)
+                                    .font(.title3)
+                                    .padding()
+                                    .frame(maxWidth: 140)
+                                    .background(Color.teal)
+                                    .cornerRadius(20)
+                            }
+                            
+                            Spacer()
+                        }
+                    }
+                    
+                    Spacer()
+                    Spacer()
+
+                    Text("Recent Runs")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+
+                    ForEach(sortedMonths, id: \.self) { month in
+                        VStack(alignment: .leading, spacing: 10) {
+                            
+                            Text(month)
+                                .font(.headline)
+                                .foregroundColor(.gray)
+
+                            ForEach(groupedEntries[month] ?? []) { item in
+                                
+                                let mood = item.mood ?? "🙂"
+                                let runType = item.runType ?? "Run"
+
+                                NavigationLink {
+                                    Text("Detail View Placeholder")
+                                } label: {
+                                    HStack {
+                                        Text(mood)
+                                            .font(.title2)
+
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(runType)
+                                                .font(.headline)
+
+                                            if let date = item.date {
+                                                Text(date, formatter: itemFormatter)
+                                                    .font(.caption)
+                                                    .foregroundColor(.gray)
+                                            }
+                                        }
+
+                                        Spacer()
+                                    }
+                                    .padding()
+                                    .cornerRadius(12)
+                                }
                             }
                         }
-                    } label: {
-                        Text(item.reflection ?? "No Reflection")
                     }
                 }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showAddView = true
-                    } label: {
-                        Label("Add Entry", systemImage: "plus")
-                    }
-                }
+                .padding()
             }
         }
         .sheet(isPresented: $showAddView) {

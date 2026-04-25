@@ -16,7 +16,7 @@ struct AddEntryView: View {
     @State private var difficulty: Double = 3
     @State private var selectedMood: String = ""
     @State private var runType: String = ""
-    let runTypes = ["Recovery", "Speed", "Long Run"]
+    let runTypes = ["Recovery", "Speed Run", "Long Run"]
     let emojis = ["😞", "😕", "😐", "🙂", "😄"]
 
     var body: some View {
@@ -51,6 +51,7 @@ struct AddEntryView: View {
                 ForEach(runTypes, id: \.self) { type in
                     Text(type)
                         .padding()
+                        .multilineTextAlignment(.center)
                         .background(runType == type ? Color.green : Color.green.opacity(0.2))
                         .foregroundColor(runType == type ? .white : .black)
                         .cornerRadius(10)
